@@ -1,0 +1,9 @@
+<ul class="dropdown-menu">
+    {% for row in value %}
+    <li >
+      <a class="dropdown-item" role="button" style="height:50px;" type="button" data-bs-placement="left" tabindex="0"  data-bs-toggle="popover" data-bs-trigger="hover" data-bs-title="Pelanggaran {{row[2]}}" 
+      data-bs-content="
+      {{row[1]}} di {{row[4]}}"><span><i class="fa-sharp fa-solid fa-envelope" aria-pressed="true" ></i></span> {{row[1]}} <br><p>{{row[4]}}</p></a>
+    </li>
+    {% endfor %}
+  </ul>

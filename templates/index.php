@@ -3,13 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Dashboard Builder</title>
-    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+    <title>Data Pelanggaran</title>
+    <!-- <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://demos.creative-tim.com/soft-ui-dashboard/assets/css/nucleo-icons.css">
     <link rel="stylesheet" href="https://demos.creative-tim.com/soft-ui-dashboard/assets/css/nucleo-svg.css">
     <link rel="stylesheet" href="https://demos.creative-tim.com/soft-ui-dashboard/assets/css/soft-ui-dashboard.min.css?v=1.0.2">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
-    <link rel="stylesheet" href="./assets/css/loopple/loopple.css">
+    <link rel="stylesheet" href="./assets/css/loopple/loopple.css"> -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/0ca54e6540.js" crossorigin="anonymous"></script>
     <link rel="icon" href="https://tolmakassar.com/apexnew/app-assets/img/Logo_MMN_JTSE.png">
@@ -32,46 +32,65 @@
       }
     </style>
 </head>
-<body class="g-sidenav-show">
-
-<nav class="navbar navbar-light bg-light fixed-top">
+<body>
+  <nav class="navbar navbar-light bg-light fixed-top">
     <div class="container-fluid">
       <a class="navbar-brand text-dark fw-semibold" href="#" style="font-size:30px;">
         <img src="https://tolmakassar.com/apexnew/app-assets/img/Logo_MMN_JTSE.png" alt="Logo" width="50" height="40" class="d-inline-block align-text-top">
           CCTV</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar">
-        <span class="navbar-toggler-icon">Menu</span>
+        <span class="navbar-toggler-icon"></span>
       </button>
       <div class="offcanvas offcanvas-end text-bg-light" tabindex="-1" id="offcanvasDarkNavbar" aria-labelledby="offcanvasDarkNavbarLabel">
         <div class="offcanvas-header bg-light border-bottom rounded-4 border-secondary">
-          <a href="#" class="btn btn-light" role="button" >
-            <i class="fa-sharp fa-solid fa-bell"></i> <span class="position-absolute top-20 start-10  p-1 badge rounded-pill bg-danger">
-              99+
-              <span class="visually-hidden">unread messages</span>
-            </span>
-         </a>
-          </button>
-          <h5 class="offcanvas-title " id="offcanvasDarkNavbarLabel">CCTV</h5>
+          <div class="dropstart">
+            <button class="btn btn-light " type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fa-sharp fa-solid fa-bell"></i>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                5
+                <span class="visually-hidden">unread messages</span>
+              </span> 
+            </button>
+            <ul class="dropdown-menu">
+            
+            <!-- Pengkoneksian ke database untuk pembuatan notifikasi -->
+            <?php
+              $conn = new mysqli('localhost', 'root', '', 'jalan_toll');
+              $query10 = $conn->query("
+              SELECT * FROM data_pelanggaran ORDER BY ID DESC LIMIT 5 
+              ");
+              while ($data7 = $query10 -> fetch_assoc()){
+                print_r ("
+                <li>
+                <a class='dropdown-item' role='button' style='height:50px;' type='button' data-bs-placement='left' tabindex='0'  data-bs-toggle='popover' data-bs-trigger='hover' data-bs-title='Pelanggaran ".$data7['WAKTU']."'data-bs-content='".$data7['JENIS_PELANGGARAN']." di ".$data7['LOKASI']."'><span><i class='fa-sharp fa-solid fa-envelope' aria-pressed='true' ></i></span>".$data7['JENIS_PELANGGARAN']."<br><p>".$data7['LOKASI']."</p></a>
+              </li>");
+              };
+            ?>
+            
+          </ul>
+          </div>
+          <h5 class="offcanvas-title fw-bold fs-3 " id="offcanvasDarkNavbarLabel ">CCTV</h5>
           <button type="button" class="btn-close btn-close-black" data-bs-dismiss="offcanvas" aria-label="Close"></button> 
         </div>
         <div class="offcanvas-body">
           <ul class="navbar-nav justify-content-end flex-grow-1 pe-3 me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link text-dark" aria-current="page" href="/#Counting">Counting</a>
+              <a class="nav-link text-dark fw-semibold fs-5" aria-current="page" href="#Counting">Counting</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-dark" href="/#pelanggaran">Pelanggaran</a>
+              <a class="nav-link text-dark fw-semibold fs-5" href="#pelanggaran">Pelanggaran</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-dark" href="/maps">Peta</a>
+              <a class="nav-link text-dark fw-semibold fs-5" href="maps" target="_blank">Peta</a>
             </li>
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="nav-link dropdown-toggle text-dark fw-semibold fs-5" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Data
               </a>
               <ul class="dropdown-menu dropdown-menu-secondary">
-                <li><a class="dropdown-item" href="/data_traffic">Counting</a></li>
-                <li><a class="dropdown-item" href="/data_pelanggaran">Pelanggaran</a></li>
+                <li><a class="dropdown-item fw-semibold" href="data_traffic" target="_blank">Counting</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item fw-semibold" href="data_pelanggaran" target="_blank">Pelanggaran</a></li>
               </ul>
             </li>
           </ul>
@@ -79,6 +98,7 @@
       </div>
     </div>
   </nav>
+
             <div class="container-fluid">
                 <div class="row align-items-center justify-content-lg-between" style="margin-top:100px">
                     <div class="col-lg-6">
@@ -260,7 +280,7 @@
         </footer>
     </div>
     <script src="https://demos.creative-tim.com/soft-ui-dashboard/assets/js/core/popper.min.js"></script>
-    <script src="https://demos.creative-tim.com/soft-ui-dashboard/assets/js/core/bootstrap.min.js"></script>
+    <!-- <script src="https://demos.creative-tim.com/soft-ui-dashboard/assets/js/core/bootstrap.min.js"></script> -->
     <script src="https://demos.creative-tim.com/soft-ui-dashboard/assets/js/plugins/chartjs.min.js"></script>
     <script src="https://demos.creative-tim.com/soft-ui-dashboard/assets/js/plugins/Chart.extension.js"></script>
     <script src="https://demos.creative-tim.com/soft-ui-dashboard/assets/js/soft-ui-dashboard.min.js?v=1.0.2"></script>
@@ -853,5 +873,14 @@
            };
     </script>
     <script src="./assets/js/loopple/loopple.js"></script>
+
+    <script>
+      const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+      const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
+      const popover = new bootstrap.Popover('.popover-dismiss', {
+        trigger: 'hover'
+      })
+    </script>
+
 </body>
 </html>

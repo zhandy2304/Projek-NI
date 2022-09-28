@@ -4,37 +4,28 @@ from yolov5.utils.general import (LOGGER, check_img_size, non_max_suppression, s
 from email.message import EmailMessage
 import ssl
 import smtplib
+import pyautogui
 from deep_sort.deep_sort import DeepSort
 from deep_sort.utils.parser import get_config
-from yolov5.utils.plots import Annotator, colors, save_one_box
+from yolov5.utils.plots import Annotator, colors
 from yolov5.utils.torch_utils import select_device, time_sync
 from yolov5.utils.datasets import LoadImages, LoadStreams
 from yolov5.models.common import DetectMultiBackend
 from yolov5.utils.downloads import attempt_download
 from yolov5.models.experimental import attempt_load
-from flask import Flask, flash, redirect, render_template, request, url_for, Response
+from flask import Flask, render_template, Response
 import torch.backends.cudnn as cudnn
 import torch
 import cv2
 from pathlib import Path
+import time
 import shutil
 import platform
 import argparse
-import sys
-from threading import Thread
-import mysql.connector
-from ast import Break
-import imghdr
-from cProfile import run
-from concurrent.futures import thread
-from multiprocessing import parent_process
-from multiprocessing.resource_sharer import stop
-import os
 from datetime import datetime
-from pickle import FALSE, TRUE
-from unittest import result
+import sys
+import mysql.connector
 import os
-import cctv2
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -44,29 +35,20 @@ sys.path.insert(0, './yolov5')
 
 # email
 
-# Flask
 app = Flask(__name__)
-# sub = cv2.createBackgroundSubtractorMOG2()  # create background subtractor
-
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # yolov5 deepsort root directory
 if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
-count = 0
-t7 = int(datetime.now().minute) + 5
-car = 0
-truck = 0
-person = 0
-i = 0
-jp = ''
+count1 = 0
+car1 = 0
+truck1 = 0
 data = []
 data1 = []
 data2 = []
 data3 = []
-reset = int(datetime.now().minute) + 7
-curr_datetime = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
-
+t7 = int(datetime.now().minute) + 5
 # buat koneksi Mysql
 mysql = mysql.connector.connect(user='root',
                                 password='',
@@ -88,14 +70,14 @@ def index():
 #     return render_template('index1.html', count=count)
 
 
-def detect(opt):
+def gen1(opt):
     """Video streaming generator function."""
 
-    out, source, yolo_model, deep_sort_model, show_vid, save_vid, save_txt, imgsz, evaluate, half, project, name, exist_ok = \
-        opt.output, opt.source, opt.yolo_model, opt.deep_sort_model, opt.show_vid, opt.save_vid, \
+    out, source3, yolo_model, deep_sort_model, show_vid, save_vid, save_txt, imgsz, evaluate, half, project, name, exist_ok = \
+        opt.output, opt.source3, opt.yolo_model, opt.deep_sort_model, opt.show_vid, opt.save_vid, \
         opt.save_txt, opt.imgsz, opt.evaluate, opt.half, opt.project, opt.name, opt.exist_ok
-    webcam = source == '0' or source.startswith(
-        'rtsp') or source.startswith('http') or source.endswith('.txt')
+    webcam = source3 == '0' or source3.startswith(
+        'rtsp') or source3.startswith('http') or source3.endswith('.txt')
 
     # initialize deepsort
     cfg = get_config()
@@ -145,11 +127,11 @@ def detect(opt):
     if webcam:
         show_vid = check_imshow()
         cudnn.benchmark = True  # set True to speed up constant image size inference
-        dataset = LoadStreams(source, img_size=imgsz,
+        dataset = LoadStreams(source3, img_size=imgsz,
                               stride=stride, auto=pt and not jit)
         bs = len(dataset)  # batch_size
     else:
-        dataset = LoadImages(source, img_size=imgsz,
+        dataset = LoadImages(source3, img_size=imgsz,
                              stride=stride, auto=pt and not jit)
         bs = 1  # batch_size
     vid_path, vid_writer = [None] * bs, [None] * bs
@@ -158,7 +140,7 @@ def detect(opt):
     names = model.module.names if hasattr(model, 'module') else model.names
 
     # extract what is in between the last '/' and last '.'
-    txt_file_name = source.split('/')[-1].split('.')[0]
+    txt_file_name = source3.split('/')[-1].split('.')[0]
     txt_path = str(Path(save_dir)) + '/' + txt_file_name + '.txt'
 
     if pt and device.type != 'cpu':
@@ -197,7 +179,6 @@ def detect(opt):
 
             p = Path(p)  # to Path
             save_path = str(save_dir / p.name)  # im.jpg, vid.mp4, ...
-            dir = save_path
             s += '%gx%g ' % img.shape[2:]  # print string
 
             annotator = Annotator(im0, line_width=2, pil=not ascii)
@@ -231,26 +212,15 @@ def detect(opt):
                         bboxes = output[0:4]
                         id = output[4]
                         cls = output[5]
-
                         # count
 
                         c = int(cls)  # integer class
                         label = f'{id} {names[c]}'
                         if names[c] == 'car':
                             count_car(bboxes, w, h, id)
-                            # save_one_box(bboxes, im0, file=save_dir / 'crops' / 'car' / f'{p.stem}.jpg', BGR=True)
-                        if names[c] == 'truck' or names[c] == 'bus' or names[c] == 'train':
+                        if names[c] == 'truck' or names[c] == 'bus':
                             count_truck(bboxes, w, h, id)
-                            # save_one_box(bboxes, im0, file=save_dir / 'crops' / 'truck' / f'{p.stem}.jpg', BGR=True)
-                        if names[c] == 'person' or names[c] == 'motorcycle' or names[c] == 'bycbicycle':
-                            dir2 = save_dir / names[c] / f'{id}.jpg'
-                            # dir3 = "static/images/"
-                            # dir3.mkdir(parents=True, exist_ok=True)
-                            # gambar = +str(curr_datetime) + f'{id}.jpg'
-                            # simpan = dir3 / gambar
-                            count_person(bboxes, w, h, id, dir2, im0,)
-
-                        count_obj(bboxes, w, h, id)
+                        count_obj1(bboxes, w, h, id)
                         annotator.box_label(
                             bboxes, label, color=colors(c, True))
 
@@ -275,36 +245,33 @@ def detect(opt):
             # Stream results
             im0 = annotator.result()
             if show_vid:
-                global count, car, truck
+                global count1, car1, truck1, bus
                 color = (0, 255, 0)
-                start_point = (400, 640)
-                end_point = (1300, 640)
-                start_point1 = (600, 550)
-                end_point1 = (1200, 550)
+                start_point = (300, h-245)
+                end_point = (390, h-240)
+                start_point1 = (200, h-190)
+                end_point1 = (380, h-175)
                 cv2.line(im0, start_point, end_point, color, thickness=2)
                 cv2.line(im0, start_point1, end_point1, color, thickness=2)
                 thickness = 2
                 org = (50, 50)
                 org1 = (50, 80)
                 org2 = (50, 110)
-                org3 = (50, 140)
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 fontScale = 1
-                cv2.putText(im0, 'total = ' + str(count), org, font,
+                cv2.putText(im0, 'total = ' + str(count1), org, font,
                             fontScale, color, thickness, cv2.LINE_AA)
-                cv2.putText(im0, 'car = ' + str(car), org1, font,
+                cv2.putText(im0, 'car = ' + str(car1), org1, font,
                             fontScale, color, thickness, cv2.LINE_AA)
-                cv2.putText(im0, 'truck and bus = ' + str(truck), org2, font,
+                cv2.putText(im0, 'truck and bus = ' + str(truck1), org2, font,
                             fontScale, color, thickness, cv2.LINE_AA)
-                cv2.putText(im0, 'Pelanggaran = ' + str(person), org3, font,
-                            fontScale, color, thickness, cv2.LINE_AA)
-                # cv2.putText(im0,'person= ' + str(person), org3, font,
+                # cv2.putText(im0,'bus= ' + str(bus), org3, font,
                 # fontScale, color, thickness, cv2.LINE_AA)
                 # cv2.imshow(str(p), im0)
                 frame = cv2.imencode('.jpg', im0)[1].tobytes()
                 yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-                # if cv2.waitKey(1) == ord('q'):  # q to quit
-                #     raise StopIteration
+                if cv2.waitKey(1) == ord('q'):  # q to quit
+                    raise StopIteration
 
             # Save results (image with detections)
             if save_vid:
@@ -336,26 +303,24 @@ def detect(opt):
 @app.route('/video_feed')
 def video_feed():
     """Video streaming route. Put this in the src attribute of an img tag."""
+    #parser = argparse.ArgumentParser()
+    #opt = parser.parse_args()
     with torch.no_grad():
-        return Response(detect(opt),
+        return Response(gen1(opt),
                         mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-def count_obj(box, w, h, id):
-    global count, data, t7, t6, car, truck, reset, person
+def count_obj1(box, w, h, id,):
+    global count1, data, t7, t6, truck1, car1
     center_coordinates = (
         int(box[0]+(box[2]-box[0])/2), int(box[1]+(box[3]-box[1])/2))
-    if int(box[1]+(box[3]-box[1])/2) > (550) and int(box[1]+(box[3]-box[1])/2) < (640):
+    if int(box[1]+(box[3]-box[1])/2) > (h-245) and int(box[1]+(box[3]-box[1])/2) < (h-175):
         if id not in data:
-            count = truck + car
+            count1 = truck1 + car1
             data.append(id)
             t6 = int(datetime.now().minute)
-            # reset tiap hari
-            # if t6 == reset:
-            #         reset += 7
-
             while t6 == t7:
-                inputdata(car, truck, count)
+                inputdata(car1, truck1, count1)
                 t7 += 5
                 # Define email sender and receiver
                 email_sender = 'cctv.toll.makassar@gmail.com'
@@ -366,10 +331,10 @@ def count_obj(box, w, h, id):
                 subject = 'Total Kendaraan'
 
                 body = """
-                Gerbang Toll Kaluku badoa
-                Total Kendaraan """+str(count)+"""
-                Total Mobil """""+str(car)+"""
-                Total Truck """""+str(truck)+"""
+                ON RAMP ALAUDDIN 1
+                Total Kendaraan """+str(count1)+"""
+                Total Mobil """""+str(car1)+"""
+                Total Truck """""+str(truck1)+"""
                 """
                 # SMPTP
                 s = smtplib.SMTP('smtp.gmail.com', 587)
@@ -381,85 +346,44 @@ def count_obj(box, w, h, id):
                 em['To'] = email_receiver
                 em['Subject'] = subject
                 em.set_content(body)
+
                 # Add SSL (layer of security
                 context = ssl.create_default_context()
-                # Log in and send the email
+               # Log in and send the email
                 s.sendmail(email_sender, email_receiver, em.as_string())
-                count = 0
-                car = 0
-                truck = 0
+                count1 = 0
+                car1 = 0
+                truck1 = 0
 
 
 def count_car(box, w, h, id):
-    global car, data1
+    global car1, data1
     center_coordinates = (
         int(box[0]+(box[2]-box[0])/2), int(box[1]+(box[3]-box[1])/2))
-    if int(box[1]+(box[3]-box[1])/2) > (550) and int(box[1]+(box[3]-box[1])/2) < (640):
+    if int(box[1]+(box[3]-box[1])/2) > (h-245) and int(box[1]+(box[3]-box[1])/2) < (h-175) and int(box[0]+(box[2]-box[0])/2) < (390) and int(box[0]+(box[2]-box[0])/2) > (295):
         if id not in data1:
-            car += 1
+            car1 += 1
             data1.append(id)
 
 
-def count_person(box, w, h, id, dir2, im0, gambar):
-    global person, data2, jp
-    center_coordinates = (
-        int(box[0]+(box[2]-box[0])/2), int(box[1]+(box[3]-box[1])/2))
-    if int(box[1]+(box[3]-box[1])/2) > (0):
-        if id not in data2:
-            person += 1
-            data2.append(id)
-            jp = 'Ada Orang'
-            save_one_box(box, im0, file=dir2, BGR=True)
-            email_sender = 'cctv.toll.makassar@gmail.com'
-            email_password = 'qllvtjshlovxmeux'
-            email_receiver = 'taufikwitri@gmail.com'
-
-            # Set the subject and body of the email
-            subject = 'Pelanggaran !!!'
-
-            body = """
-            Pelanggaran di Gerbang toll Kaluku Badoa"""
-            # SMPTP
-            s = smtplib.SMTP('smtp.gmail.com', 587)
-            # start TLS for security
-            s.starttls()
-            s.login(email_sender, email_password)
-            em = EmailMessage()
-            em['From'] = email_sender
-            em['To'] = email_receiver
-            em['Subject'] = subject
-            em.set_content(body)
-            with open(dir2, 'rb') as f:
-                image_data = f.read()
-                image_type = imghdr.what(f.name)
-                image_name = f.name
-            em.add_attachment(image_data, maintype='image',
-                              subtype=image_type, filename=image_name)
-            # Add SSL (layer of security)
-            context = ssl.create_default_context()
-            # Log in and send the email
-            s.sendmail(email_sender, email_receiver, em.as_string())
-            inputpelanggaran(jp, gambar, dir2)
-
-
 def count_truck(box, w, h, id):
-    global truck, data3
+    global truck1, data3
     center_coordinates = (
         int(box[0]+(box[2]-box[0])/2), int(box[1]+(box[3]-box[1])/2))
-    if int(box[1]+(box[3]-box[1])/2) > (550) and int(box[1]+(box[3]-box[1])/2) < (640):
+    if int(box[1]+(box[3]-box[1])/2) > (h-245) and int(box[1]+(box[3]-box[1])/2) < (h-175) and int(box[0]+(box[2]-box[0])/2) < (390) and int(box[0]+(box[2]-box[0])/2) > (295):
         if id not in data3:
-            truck += 1
+            truck1 += 1
             data3.append(id)
 
 # Function untuk menginpu data ke database
 
 
-def inputdata(car, truck, count):
-    car = str(car)
-    truck = str(truck)
-    count = str(count)
+def inputdata(car1, truck1, count1):
+    car = str(car1)
+    truck = str(truck1)
+    count = str(count1)
     # membuat query untuk insert data ke mysql
-    sql = "INSERT INTO grb_kalukubadoa(waktu_input, Mobil, Bus_Truk, total) VALUES (now(), '" + \
+    sql = "INSERT INTO on_ramp_pettarani(waktu_input, Mobil, Bus_Truk, total) VALUES (now(), '" + \
         car+"', '"+truck+"', '"+count+"')"
 
     # untuk memasukkan variabel int kedalam sql, maka tidak diperlukan petik satu. hanya untuk data string yang memerlukan double petik
@@ -471,47 +395,31 @@ def inputdata(car, truck, count):
     mysql.commit()
 
 
-def inputpelanggaran(jp, gambar, dir2):
-    jp = jp
-    lokasi = 'Gerbang Toll Kaluku Badoa'
-    with open(dir2, 'rb') as f:
-        image_data = f.read()
-        image_type = imghdr.what(f.name)
-        image_name = f.name
-    sql = "INSERT INTO data_pelanggaran(JENIS_PELANGGARAN, WAKTU, GAMBAR, LOKASI) VALUES ( '" + \
-        jp+"', now(), '"+str(image_name)+"', '"+lokasi + "')"
-    print(sql)
-    mysqlCursor.execute(sql)
-    mysql.commit()
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--yolo_model', nargs='+', type=str,
                         default='yolov5s.pt', help='model.pt path(s)')
     parser.add_argument('--deep_sort_model', type=str, default='osnet_x0_25')
     # file/folder, 0 for webcam
-    parser.add_argument(
-        '--source', type=str, default='rtsp://admin:admin123@192.168.1.127:554/live.sdp', help='source')
+    parser.add_argument('--source3', type=str,
+                        default='rtsp://admin:admin123@192.168.3.19:554/live1s2.sdp', help='source')
     parser.add_argument('--output', type=str, default='inference/output',
                         help='output folder')  # output folder
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+',
-                        type=int, default=[640], help='inference size h,w')
+                        type=int, default=[480], help='inference size h,w')
     parser.add_argument('--conf-thres', type=float,
-                        default=0.5, help='object confidence threshold')
+                        default=0.47, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float,
                         default=0.5, help='IOU threshold for NMS')
     parser.add_argument('--fourcc', type=str, default='mp4v',
                         help='output video codec (verify ffmpeg support)')
-    parser.add_argument('--device', default='',
+    parser.add_argument('--device', default='cpu',
                         help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--show-vid', action='store_false',
                         help='display tracking video results')
-    parser.add_argument('--save-vid', action='store_true',
+    parser.add_argument('--save_vid', action='store_true',
                         help='save video tracking results')
-    parser.add_argument('--save-crop', action='store_false',
-                        help='save cropped prediction boxes')
-    parser.add_argument('--save_txt', action='store_true',
+    parser.add_argument('--save_txt', action='store_false',
                         help='save MOT compliant results to *.txt')
     # class 0 is person, 1 is bycicle, 2 is car... 79 is oven
     parser.add_argument('--classes', nargs='+', type=int,
@@ -534,10 +442,10 @@ if __name__ == '__main__':
                         help='use OpenCV DNN for ONNX inference')
     parser.add_argument('--project', default=ROOT /
                         'runs/track', help='save results to project/name')
-    parser.add_argument('--name', default='satu',
+    parser.add_argument('--name', default='dua',
                         help='save results to project/name')
     parser.add_argument('--exist-ok', action='store_true',
                         help='existing project/name ok, do not increment')
     opt = parser.parse_args()
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand
-    Thread(app.run(host='0.0.0.0', port=5000, debug=True)).start()
+    app.run(host='0.0.0.0', threaded=True, port=5000, debug=True)

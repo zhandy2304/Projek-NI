@@ -1,4 +1,28 @@
 # limit the number of cpus used by high performance libraries
+from yolov5.utils.general import (LOGGER, check_img_size, non_max_suppression, scale_coords,
+                                  check_imshow, xyxy2xywh, increment_path)
+from email.message import EmailMessage
+import ssl
+import smtplib
+from deep_sort.deep_sort import DeepSort
+from deep_sort.utils.parser import get_config
+from yolov5.utils.plots import Annotator, colors, save_one_box
+from yolov5.utils.torch_utils import select_device, time_sync
+from yolov5.utils.datasets import LoadImages, LoadStreams
+from yolov5.models.common import DetectMultiBackend
+from yolov5.utils.downloads import attempt_download
+from yolov5.models.experimental import attempt_load
+from flask import Flask, render_template, Response
+import torch.backends.cudnn as cudnn
+import torch
+import cv2
+from pathlib import Path
+import shutil
+import platform
+import argparse
+import sys
+from threading import Thread
+import mysql.connector
 from ast import Break
 import imghdr
 from cProfile import run
@@ -9,43 +33,18 @@ from datetime import datetime
 from pickle import FALSE, TRUE
 from unittest import result
 import os
-import cctv2 
+import cctv2
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
 os.environ["NUMEXPR_NUM_THREADS"] = "1"
-import mysql.connector
-from threading import Thread
-import sys
 sys.path.insert(0, './yolov5')
-import argparse
-import os
-import platform
-import shutil
-from pathlib import Path
-import cv2
-import torch
-import torch.backends.cudnn as cudnn
-from flask import Flask, render_template, Response
 
-from yolov5.models.experimental import attempt_load
-from yolov5.utils.downloads import attempt_download
-from yolov5.models.common import DetectMultiBackend
-from yolov5.utils.datasets import LoadImages, LoadStreams
-from yolov5.utils.general import (LOGGER, check_img_size, non_max_suppression, scale_coords, 
-                                  check_imshow, xyxy2xywh, increment_path)
-from yolov5.utils.torch_utils import select_device, time_sync
-from yolov5.utils.plots import Annotator, colors, save_one_box
-from deep_sort.utils.parser import get_config
-from deep_sort.deep_sort import DeepSort
 
-## email
-import smtplib
-import ssl
-from email.message import EmailMessage
+# email
 
-## Flask 
+# Flask
 app = Flask(__name__)
 # sub = cv2.createBackgroundSubtractorMOG2()  # create background subtractor
 
@@ -55,12 +54,12 @@ if str(ROOT) not in sys.path:
     sys.path.append(str(ROOT))  # add ROOT to PATH
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 count = 0
-t7= int(datetime.now().minute) + 5
+t7 = int(datetime.now().minute) + 5
 car = 0
 truck = 0
 person = 0
-i =0
-jp =''
+i = 0
+jp = ''
 data = []
 data1 = []
 data2 = []
@@ -71,12 +70,13 @@ count1 = cctv2.count1
 reset = int(datetime.now().minute) + 7
 
 # buat koneksi Mysql
-mysql = mysql.connector.connect(user='root', 
-                                password='', 
-                                host='localhost', 
-                                database='jalan_toll');
+mysql = mysql.connector.connect(user='root',
+                                password='',
+                                host='localhost',
+                                database='jalan_toll')
 
-mysqlCursor = mysql.cursor();
+mysqlCursor = mysql.cursor()
+
 
 @app.route('/')
 def index():
@@ -88,15 +88,16 @@ def index():
 #     """Video streaming home page."""
 #     count = {'count':str(count)}
 #     return render_template('index1.html', count=count)
+
+
 def detect1(opt):
     """Video streaming generator function."""
 
-    out, source2, yolo_model, deep_sort_model, show_vid, save_vid, save_txt, imgsz, evaluate, half, project, name, exist_ok= \
+    out, source2, yolo_model, deep_sort_model, show_vid, save_vid, save_txt, imgsz, evaluate, half, project, name, exist_ok = \
         opt.output, opt.source2, opt.yolo_model, opt.deep_sort_model, opt.show_vid, opt.save_vid, \
         opt.save_txt, opt.imgsz, opt.evaluate, opt.half, opt.project, opt.name, opt.exist_ok
     webcam = source2 == '0' or source2.startswith(
         'rtsp') or source2.startswith('http') or source2.endswith('.txt')
-
 
     # initialize deepsort
     cfg = get_config()
@@ -120,9 +121,9 @@ def detect1(opt):
         os.makedirs(out)  # make new output folder
 
     # Directories
-    save_dir = increment_path(Path(project) / name, exist_ok=exist_ok)  # increment run
+    save_dir = increment_path(Path(project) / name,
+                              exist_ok=exist_ok)  # increment run
     save_dir.mkdir(parents=True, exist_ok=True)  # make dir
-    
 
     # Load model
     device = select_device(device)
@@ -131,7 +132,8 @@ def detect1(opt):
     imgsz = check_img_size(imgsz, s=stride)  # check image size
 
     # Half
-    half &= pt and device.type != 'cpu'  # half precision only supported by PyTorch on CUDA
+    # half precision only supported by PyTorch on CUDA
+    half &= pt and device.type != 'cpu'
     if pt:
         model.model.half() if half else model.model.float()
 
@@ -145,10 +147,12 @@ def detect1(opt):
     if webcam:
         show_vid = check_imshow()
         cudnn.benchmark = True  # set True to speed up constant image size inference
-        dataset = LoadStreams(source2, img_size=imgsz, stride=stride, auto=pt and not jit)
+        dataset = LoadStreams(source2, img_size=imgsz,
+                              stride=stride, auto=pt and not jit)
         bs = len(dataset)  # batch_size
     else:
-        dataset = LoadImages(source2, img_size=imgsz, stride=stride, auto=pt and not jit)
+        dataset = LoadImages(source2, img_size=imgsz,
+                             stride=stride, auto=pt and not jit)
         bs = 1  # batch_size
     vid_path, vid_writer = [None] * bs, [None] * bs
 
@@ -160,7 +164,8 @@ def detect1(opt):
     txt_path = str(Path(save_dir)) + '/' + txt_file_name + '.txt'
 
     if pt and device.type != 'cpu':
-        model(torch.zeros(1, 3, *imgsz).to(device).type_as(next(model.model.parameters())))  # warmup
+        model(torch.zeros(
+            1, 3, *imgsz).to(device).type_as(next(model.model.parameters())))  # warmup
     dt, seen = [0.0, 0.0, 0.0, 0.0], 0
     for frame_idx, (path, img, im0s, vid_cap, s) in enumerate(dataset):
         t1 = time_sync()
@@ -173,13 +178,15 @@ def detect1(opt):
         dt[0] += t2 - t1
 
         # Inference
-        visualize = increment_path(save_dir / Path(path).stem, mkdir=True) if opt.visualize else False
+        visualize = increment_path(
+            save_dir / Path(path).stem, mkdir=True) if opt.visualize else False
         pred = model(img, augment=opt.augment, visualize=visualize)
         t3 = time_sync()
         dt[1] += t3 - t2
 
         # Apply NMS
-        pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, opt.classes, opt.agnostic_nms, max_det=opt.max_det)
+        pred = non_max_suppression(
+            pred, opt.conf_thres, opt.iou_thres, opt.classes, opt.agnostic_nms, max_det=opt.max_det)
         dt[2] += time_sync() - t3
         # Process detections
         for i, det in enumerate(pred):  # detections per image
@@ -194,9 +201,9 @@ def detect1(opt):
             save_path = str(save_dir / p.name)  # im.jpg, vid.mp4, ...
             dir = save_path
             s += '%gx%g ' % img.shape[2:]  # print string
-            
+
             annotator = Annotator(im0, line_width=2, pil=not ascii)
-            w, h = im0.shape[1],im0.shape[0]
+            w, h = im0.shape[1], im0.shape[0]
             if det is not None and len(det):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(
@@ -205,7 +212,8 @@ def detect1(opt):
                 # Print results
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
-                    s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
+                    # add to string
+                    s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "
 
                 xywhs = xyxy2xywh(det[:, 0:4])
                 confs = det[:, 4]
@@ -213,7 +221,8 @@ def detect1(opt):
 
                 # pass detections to deepsort
                 t4 = time_sync()
-                outputs = deepsort.update(xywhs.cpu(), confs.cpu(), clss.cpu(), im0)
+                outputs = deepsort.update(
+                    xywhs.cpu(), confs.cpu(), clss.cpu(), im0)
                 t5 = time_sync()
                 dt[3] += t5 - t4
 
@@ -224,9 +233,9 @@ def detect1(opt):
                         bboxes = output[0:4]
                         id = output[4]
                         cls = output[5]
-                        
-                        #count
-                        
+
+                        # count
+
                         c = int(cls)  # integer class
                         label = f'{id} {names[c]}'
                         # if names[c] == 'car':
@@ -235,16 +244,17 @@ def detect1(opt):
                         # if names[c] == 'truck' or names[c] == 'bus' or names[c] == 'train':
                         #     count_truck(bboxes,w,h,id)
                         #     # save_one_box(bboxes, im0, file=save_dir / 'crops' / 'truck' / f'{p.stem}.jpg', BGR=True)
-                        if names[c] == 'person' or names[c] == 'motorcycle' or names[c] == 'bycbicycle' :
+                        if names[c] == 'person' or names[c] == 'motorcycle' or names[c] == 'bycbicycle':
                             dir2 = save_dir / 'crops' / names[c] / f'{id}.jpg'
                             gambar = f'{id}.jpg'
                             dir3 = save_dir / 'crops' / names[c]
-                            count_pelanggaran(bboxes,w,h,id,dir2,im0, gambar,dir3)
-                            
+                            count_pelanggaran(
+                                bboxes, w, h, id, dir2, im0, gambar, dir3)
+
                         # count_obj(bboxes,w,h,id)
-                        annotator.box_label(bboxes, label, color=colors(c, True))
-                            
-                       
+                        annotator.box_label(
+                            bboxes, label, color=colors(c, True))
+
                         if save_txt:
                             # to MOT format
                             bbox_left = output[0]
@@ -254,9 +264,10 @@ def detect1(opt):
                             # Write MOT compliant results to file
                             with open(txt_path, 'a') as f:
                                 f.write(('%g ' * 10 + '\n') % (frame_idx + 1, id, bbox_left,  # MOT format
-                                                            bbox_top, bbox_w, bbox_h, -1, -1, -1, -1))
+                                                               bbox_top, bbox_w, bbox_h, -1, -1, -1, -1))
 
-                LOGGER.info(f'{s}Done. YOLO:({t3 - t2:.3f}s), DeepSort:({t5 - t4:.3f}s)')
+                LOGGER.info(
+                    f'{s}Done. YOLO:({t3 - t2:.3f}s), DeepSort:({t5 - t4:.3f}s)')
 
             else:
                 deepsort.increment_ages()
@@ -266,7 +277,7 @@ def detect1(opt):
             im0 = annotator.result()
             if show_vid:
                 global count, car, truck
-                color=(0,255,0)
+                color = (0, 255, 0)
                 # start_point = (400, 640)
                 # end_point = (1300, 640)
                 # start_point1 = (600, 550)
@@ -275,20 +286,20 @@ def detect1(opt):
                 # cv2.line(im0, start_point1, end_point1, color, thickness=2)
                 thickness = 2
                 org = (50, 50)
-                org1=(50, 80)
-                org2=(50, 110)
-                org3=(50, 140)
+                org1 = (50, 80)
+                org2 = (50, 110)
+                org3 = (50, 140)
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 fontScale = 1
-                # cv2.putText(im0,'total = ' + str(count), org, font, 
+                # cv2.putText(im0,'total = ' + str(count), org, font,
                 # fontScale, color, thickness, cv2.LINE_AA)
-                # cv2.putText(im0,'car = ' + str(car), org1, font, 
+                # cv2.putText(im0,'car = ' + str(car), org1, font,
                 # fontScale, color, thickness, cv2.LINE_AA)
-                # cv2.putText(im0,'truck and bus = ' + str(truck), org2, font, 
+                # cv2.putText(im0,'truck and bus = ' + str(truck), org2, font,
                 # fontScale, color, thickness, cv2.LINE_AA)
-                cv2.putText(im0,'Pelanggaran = ' + str(person), org, font, 
-                fontScale, color, thickness, cv2.LINE_AA)
-                # cv2.putText(im0,'person= ' + str(person), org3, font, 
+                cv2.putText(im0, 'Pelanggaran = ' + str(person), org, font,
+                            fontScale, color, thickness, cv2.LINE_AA)
+                # cv2.putText(im0,'person= ' + str(person), org3, font,
                 # fontScale, color, thickness, cv2.LINE_AA)
                 # cv2.imshow(str(p), im0)
                 frame = cv2.imencode('.jpg', im0)[1].tobytes()
@@ -309,7 +320,8 @@ def detect1(opt):
                     else:  # stream
                         fps, w, h = 30, im0.shape[1], im0.shape[0]
                         save_path += '.mp4'
-                    vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
+                    vid_writer = cv2.VideoWriter(
+                        save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (w, h))
                 vid_writer.write(im0)
 
     # Print results
@@ -319,13 +331,15 @@ def detect1(opt):
     if save_txt or save_vid:
         print('Results saved to %s' % save_path)
         if platform == 'win':  # MacOS
-            os.system('open ' + save_path)        
+            os.system('open ' + save_path)
+
+
 @app.route('/video_feed')
 def video_feed():
     """Video streaming route. Put this in the src attribute of an img tag."""
     with torch.no_grad():
         return Response(detect1(opt),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+                        mimetype='multipart/x-mixed-replace; boundary=frame')
 
 # def count_obj(box,w,h,id):
 #     global count,data, t7, t6, car, truck, reset, person
@@ -369,13 +383,13 @@ def video_feed():
 #                 em['To'] = email_receiver
 #                 em['Subject'] = subject
 #                 em.set_content(body)
-                
+
 
 #                 # Add SSL (layer of security
-#                 context = ssl.create_default_context()    
-#             # Log in and send the email   
-#                 s.sendmail(email_sender, email_receiver, em.as_string()) 
-                                   
+#                 context = ssl.create_default_context()
+#             # Log in and send the email
+#                 s.sendmail(email_sender, email_receiver, em.as_string())
+
 # def count_car(box,w,h,id):
 #     global car,data1
 #     center_coordinates = (int(box[0]+(box[2]-box[0])/2) , int(box[1]+(box[3]-box[1])/2))
@@ -383,11 +397,12 @@ def video_feed():
 #         if  id not in data1:
 #             car += 1
 #             data1.append(id)
-def count_pelanggaran(box,w,h,id, dir2,im0, gambar, dir3):
-    global person,data2,jp
-    center_coordinates = (int(box[0]+(box[2]-box[0])/2) , int(box[1]+(box[3]-box[1])/2))
+def count_pelanggaran(box, w, h, id, dir2, im0, gambar, dir3):
+    global person, data2, jp
+    center_coordinates = (
+        int(box[0]+(box[2]-box[0])/2), int(box[1]+(box[3]-box[1])/2))
     if int(box[1]+(box[3]-box[1])/2) > (0):
-        if  id not in data2:
+        if id not in data2:
             person += 1
             data2.append(id)
             jp = 'Ada Orang'
@@ -402,7 +417,7 @@ def count_pelanggaran(box,w,h,id, dir2,im0, gambar, dir3):
 
             body = """
             Pelanggaran di On Ramp Kaluku Badoa"""
-            ## SMPTP
+            # SMPTP
             s = smtplib.SMTP('smtp.gmail.com', 587)
             # start TLS for security
             s.starttls()
@@ -416,13 +431,14 @@ def count_pelanggaran(box,w,h,id, dir2,im0, gambar, dir3):
                 image_data = f.read()
                 image_type = imghdr.what(f.name)
                 image_name = f.name
-            em.add_attachment(image_data, maintype='image', subtype=image_type, filename=image_name)
+            em.add_attachment(image_data, maintype='image',
+                              subtype=image_type, filename=image_name)
             # Add SSL (layer of security)
-            context = ssl.create_default_context()    
-            # Log in and send the email   
+            context = ssl.create_default_context()
+            # Log in and send the email
             s.sendmail(email_sender, email_receiver, em.as_string())
-            inputpelanggaran(jp, gambar, dir2, dir3)
-           
+            inputpelanggaran(jp, gambar, dir2)
+
 
 # def count_truck(box,w,h,id):
 #     global truck,data3
@@ -447,52 +463,73 @@ def count_pelanggaran(box,w,h,id, dir2,im0, gambar, dir3):
 
 #     # mengeksekusi commit biar permanen
 #     mysql.commit()
-def inputpelanggaran(jp, gambar, dir2, dir3):
+def inputpelanggaran(jp, gambar, dir2):
     jp = jp
     lokasi = 'On Ramp Kaluku Badoa'
-    with open(dir3, 'rb') as f:
+    with open(dir2, 'rb') as f:
         image_data = f.read()
         image_type = imghdr.what(f.name)
         image_name = f.name
-    sql = "INSERT INTO data_pelanggaran(JENIS_PELANGGARAN, WAKTU, GAMBAR, LOKASI, DIR) VALUES ( '"+jp+"', now(), '"+gambar+"', '"+lokasi+"','"+image_name+"')";
+    sql = "INSERT INTO data_pelanggaran(JENIS_PELANGGARAN, WAKTU, GAMBAR, LOKASI) VALUES ( '" + \
+        jp+"', now(), '"+image_name+"', '"+lokasi+"')"
     print(sql)
     mysqlCursor.execute(sql)
     mysql.commit()
-    
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--yolo_model', nargs='+', type=str, default='yolov5s.pt', help='model.pt path(s)')
+    parser.add_argument('--yolo_model', nargs='+', type=str,
+                        default='yolov5s.pt', help='model.pt path(s)')
     parser.add_argument('--deep_sort_model', type=str, default='osnet_x0_25')
-    parser.add_argument('--source2', type=str, default='rtsp://admin:admin123@192.168.22.8:554/live1s3.sdp', help='source')  # file/folder, 0 for webcam
-    parser.add_argument('--output', type=str, default='inference/output', help='output folder')  # output folder
-    parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[480], help='inference size h,w')
-    parser.add_argument('--conf-thres', type=float, default=0.4, help='object confidence threshold')
-    parser.add_argument('--iou-thres', type=float, default=0.5, help='IOU threshold for NMS')
-    parser.add_argument('--fourcc', type=str, default='mp4v', help='output video codec (verify ffmpeg support)')
-    parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--show-vid', action='store_false', help='display tracking video results')
-    parser.add_argument('--save-vid', action='store_true', help='save video tracking results')
-    parser.add_argument('--save-crop', action='store_false', help='save cropped prediction boxes')
-    parser.add_argument('--save_txt', action='store_true', help='save MOT compliant results to *.txt')
+    # file/folder, 0 for webcam
+    parser.add_argument('--source2', type=str,
+                        default='rtsp://admin:admin123@192.168.22.8:554/live1s3.sdp', help='source')
+    parser.add_argument('--output', type=str, default='inference/output',
+                        help='output folder')  # output folder
+    parser.add_argument('--imgsz', '--img', '--img-size', nargs='+',
+                        type=int, default=[480], help='inference size h,w')
+    parser.add_argument('--conf-thres', type=float,
+                        default=0.4, help='object confidence threshold')
+    parser.add_argument('--iou-thres', type=float,
+                        default=0.5, help='IOU threshold for NMS')
+    parser.add_argument('--fourcc', type=str, default='mp4v',
+                        help='output video codec (verify ffmpeg support)')
+    parser.add_argument('--device', default='',
+                        help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--show-vid', action='store_false',
+                        help='display tracking video results')
+    parser.add_argument('--save-vid', action='store_true',
+                        help='save video tracking results')
+    parser.add_argument('--save-crop', action='store_false',
+                        help='save cropped prediction boxes')
+    parser.add_argument('--save_txt', action='store_true',
+                        help='save MOT compliant results to *.txt')
     # class 0 is person, 1 is bycicle, 2 is car... 79 is oven
-    parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --classes 0, or --classes 0 1 2 3')
-    parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
-    parser.add_argument('--augment', action='store_true', help='augmented inference')
-    parser.add_argument('--evaluate', action='store_true', help='augmented inference')
-    parser.add_argument("--config_deepsort", type=str, default="deep_sort/configs/deep_sort.yaml")
-    parser.add_argument("--half", action="store_true", help="use FP16 half-precision inference")
-    parser.add_argument('--visualize', action='store_true', help='visualize features')
-    parser.add_argument('--max-det', type=int, default=1000, help='maximum detection per image')
-    parser.add_argument('--dnn', action='store_true', help='use OpenCV DNN for ONNX inference')
-    parser.add_argument('--project', default=ROOT / 'runs/track', help='save results to project/name')
-    parser.add_argument('--name', default='tiga', help='save results to project/name')
-    parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
+    parser.add_argument('--classes', nargs='+', type=int,
+                        help='filter by class: --classes 0, or --classes 0 1 2 3')
+    parser.add_argument('--agnostic-nms', action='store_true',
+                        help='class-agnostic NMS')
+    parser.add_argument('--augment', action='store_true',
+                        help='augmented inference')
+    parser.add_argument('--evaluate', action='store_true',
+                        help='augmented inference')
+    parser.add_argument("--config_deepsort", type=str,
+                        default="deep_sort/configs/deep_sort.yaml")
+    parser.add_argument("--half", action="store_true",
+                        help="use FP16 half-precision inference")
+    parser.add_argument('--visualize', action='store_true',
+                        help='visualize features')
+    parser.add_argument('--max-det', type=int, default=1000,
+                        help='maximum detection per image')
+    parser.add_argument('--dnn', action='store_true',
+                        help='use OpenCV DNN for ONNX inference')
+    parser.add_argument('--project', default=ROOT /
+                        'runs/track', help='save results to project/name')
+    parser.add_argument('--name', default='tiga',
+                        help='save results to project/name')
+    parser.add_argument('--exist-ok', action='store_true',
+                        help='existing project/name ok, do not increment')
     opt = parser.parse_args()
     opt.imgsz *= 2 if len(opt.imgsz) == 1 else 1  # expand
     Thread(app.run(host='0.0.0.0', port=5000, debug=True)).start()
-    
-        
-
-
