@@ -1,39 +1,46 @@
-# limit the number of cpus used by high performance libraries
-from yolov5.utils.general import (LOGGER, check_img_size, non_max_suppression, scale_coords,
-                                  check_imshow, xyxy2xywh, increment_path)
-from email.message import EmailMessage
-import ssl
-import smtplib
-import pyautogui
-from deep_sort.deep_sort import DeepSort
-from deep_sort.utils.parser import get_config
-from yolov5.utils.plots import Annotator, colors
-from yolov5.utils.torch_utils import select_device, time_sync
-from yolov5.utils.datasets import LoadImages, LoadStreams
-from yolov5.models.common import DetectMultiBackend
-from yolov5.utils.downloads import attempt_download
-from yolov5.models.experimental import attempt_load
-from flask import Flask, render_template, Response
-import torch.backends.cudnn as cudnn
-import torch
-import cv2
-from pathlib import Path
-import time
-import shutil
-import platform
-import argparse
-from datetime import datetime
-import sys
-import mysql.connector
+from ast import Break
+from cProfile import run
+from concurrent.futures import thread
+from multiprocessing.resource_sharer import stop
 import os
+from datetime import datetime
+from pickle import FALSE, TRUE
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
 os.environ["NUMEXPR_NUM_THREADS"] = "1"
+import mysql.connector
+from threading import Thread
+import sys
 sys.path.insert(0, './yolov5')
+import argparse
+import os
+import platform
+import shutil
+from pathlib import Path
+import cv2
+import torch
+import torch.backends.cudnn as cudnn
+from flask import Flask, render_template, Response
 
-# email
+from yolov5.models.experimental import attempt_load
+from yolov5.utils.downloads import attempt_download
+from yolov5.models.common import DetectMultiBackend
+from yolov5.utils.datasets import LoadImages, LoadStreams
+from yolov5.utils.general import (LOGGER, check_img_size, non_max_suppression, scale_coords, 
+                                  check_imshow, xyxy2xywh, increment_path)
+from yolov5.utils.torch_utils import select_device, time_sync
+from yolov5.utils.plots import Annotator, colors, save_one_box
+from deep_sort.utils.parser import get_config
+from deep_sort.deep_sort import DeepSort
+
+## email
+import pyautogui
+import smtplib
+import ssl
+from email.message import EmailMessage
+import imghdr
 
 app = Flask(__name__)
 FILE = Path(__file__).resolve()
@@ -399,7 +406,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--yolo_model', nargs='+', type=str,
                         default='yolov5s.pt', help='model.pt path(s)')
-    parser.add_argument('--deep_sort_model', type=str, default='osnet_x0_25')
+    parser.add_argument('--deep_sort_model', type=str, default='mobilenetv2_x1_0')
     # file/folder, 0 for webcam
     parser.add_argument('--source3', type=str,
                         default='rtsp://admin:admin123@192.168.3.19:554/live1s2.sdp', help='source')
@@ -408,7 +415,7 @@ if __name__ == '__main__':
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+',
                         type=int, default=[480], help='inference size h,w')
     parser.add_argument('--conf-thres', type=float,
-                        default=0.47, help='object confidence threshold')
+                        default=0.48, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float,
                         default=0.5, help='IOU threshold for NMS')
     parser.add_argument('--fourcc', type=str, default='mp4v',

@@ -259,8 +259,7 @@ def pelanggaran():
                                     image_name = f.name
                                 em.add_attachment(
                                     image_data, maintype='image', subtype=image_type, filename=image_name)
-                                gambar = "static/pelanggaran/melawanarus-" + \
-                                    str(cnt_down)+"-"+str(curr_datetime)+".png"
+                                gambar = "static/pelanggaran/melawanarus-" +str(cnt_down)+"-"+str(curr_datetime)+".png"
                                 # membuat query untuk insert data ke mysql
                                 sql = "INSERT INTO data_pelanggaran( JENIS_PELANGGARAN, WAKTU, GAMBAR, LOKASI) VALUES ( 'Melawan Arus', now(),'" + \
                                     gambar+"','Off Ramp Rappokalling')"

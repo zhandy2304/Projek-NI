@@ -9,6 +9,15 @@
   <link rel="icon" href="https://tolmakassar.com/apexnew/app-assets/img/Logo_MMN_JTSE.png">
   <script src="https://maps.google.com/maps/api/js?key=AIzaSyCgELFbsvJqa5gTNtLYGINwu8dJcjbVIbc" type="text/javascript"></script>
   <!-- <script src="https://maps.googleapis.com/maps/api/js?sensor=false&callback=myMap"></script> -->
+  
+  <!-- Automatic refresh page every 10 minutes -->
+  <script>
+    function autoRefresh() {
+        window.location = window.location.href;
+    }
+    setInterval('autoRefresh()', 600000);
+</script>
+
   <style>
       .chartjs-table, th, td{
 
@@ -151,7 +160,7 @@
 
             <div class="card mb-4">
                 <div class="card-header pb-0">
-                    <h6>Data Harian Traffic Lalu Lintas On Ramp Abubakar Lambogo</h6>
+                    <h6>Data Harian Traffic Lalu Lintas On Ramp Ablam 1</h6>
                     <p class="text-sm">
                         <i class="fa fa-arrow-up text-success" aria-hidden="true"></i>
                         <span class="font-weight-bold">4% more</span> in 2021
@@ -320,7 +329,7 @@
         SUM(Mobil) AS mobil,
         SUM(Bus_Truk) AS truk,
         SUM(total) AS total
-    FROM on_rame_pettarani
+    FROM on_ramp_pettarani
     GROUP BY DAY(waktu_input)
     ");
 
@@ -357,7 +366,7 @@
         SUM(Mobil) AS mobil3,
         SUM(Bus_Truk) AS truk3,
         SUM(total) AS total3
-    FROM on_rame_pettarani
+    FROM on_ramp_pettarani
     WHERE DAY(waktu_input) = DAY(CURDATE())
     GROUP BY HOUR(waktu_input)
     ");

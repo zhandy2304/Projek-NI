@@ -29,7 +29,7 @@ app.config['MYSQL_DB'] = 'jalan_toll'
 mysql = MySQL(app)
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
     """Video streaming home page."""
 
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--yolo_model', nargs='+', type=str,
                         default='yolov5s.pt', help='model.pt path(s)')
-    parser.add_argument('--deep_sort_model', type=str, default='osnet_x0_25')
+    parser.add_argument('--deep_sort_model', type=str, default='mobilenetv2_x1_0')
     parser.add_argument(
         '--source', type=str, default='rtsp://admin:admin123@192.168.1.127:554/live.sdp', help='source')
     # file/folder, 0 for webcam
@@ -118,12 +118,12 @@ if __name__ == "__main__":
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+',
                         type=int, default=[480], help='inference size h,w')
     parser.add_argument('--conf-thres', type=float,
-                        default=0.47, help='object confidence threshold')
+                        default=0.48, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float,
                         default=0.5, help='IOU threshold for NMS')
     parser.add_argument('--fourcc', type=str, default='mp4v',
                         help='output video codec (verify ffmpeg support)')
-    parser.add_argument('--device', default='',
+    parser.add_argument('--device', default='cpu',
                         help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--show_vid', action='store_false',
                         help='display tracking video results')

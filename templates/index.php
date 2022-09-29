@@ -31,6 +31,15 @@
         text-align : center;
       }
     </style>
+
+    <!-- Automatic refresh page every 10 minutes -->
+    <script>
+        function autoRefresh() {
+            window.location = window.location.href;
+        }
+        setInterval('autoRefresh()', 600000);
+    </script>
+
 </head>
 <body>
   <nav class="navbar navbar-light bg-light fixed-top">

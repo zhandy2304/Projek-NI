@@ -10,6 +10,14 @@
   <script src="https://maps.google.com/maps/api/js?key=AIzaSyCgELFbsvJqa5gTNtLYGINwu8dJcjbVIbc" type="text/javascript"></script>
   <!-- <script src="https://maps.googleapis.com/maps/api/js?sensor=false&callback=myMap"></script> -->
 
+  <!-- Automatic refresh page -->
+  <script>
+        function autoRefresh() {
+            window.location = window.location.href;
+        }
+        setInterval('autoRefresh()', 600000);
+    </script>
+
 </head> 
 
 <body>
@@ -124,12 +132,12 @@ foreach($query7 as $data2){
 
 $query3 = $conn->query("
 SELECT SUM(TOTAL) as total
-FROM on_rame_pettarani
+FROM on_ramp_pettarani
 WHERE DAY(waktu_input) = DAY(CURRENT_DATE())");
 
 $query4 = $conn->query("
 SELECT SUM(TOTAL) as total
-FROM on_rame_pettarani
+FROM on_ramp_pettarani
 WHERE DAY(waktu_input) = DAY(CURRENT_DATE())");
 
 // Deklarasi variabel jumlah kendaraan

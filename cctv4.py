@@ -1,46 +1,45 @@
-# limit the number of cpus used by high performance libraries
-from yolov5.utils.general import (LOGGER, check_img_size, non_max_suppression, scale_coords,
-                                  check_imshow, xyxy2xywh, increment_path)
-from email.message import EmailMessage
-import ssl
-import smtplib
-from deep_sort.deep_sort import DeepSort
-from deep_sort.utils.parser import get_config
-from yolov5.utils.plots import Annotator, colors, save_one_box
-from yolov5.utils.torch_utils import select_device, time_sync
-from yolov5.utils.datasets import LoadImages, LoadStreams
-from yolov5.models.common import DetectMultiBackend
-from yolov5.utils.downloads import attempt_download
-from yolov5.models.experimental import attempt_load
-from flask import Flask, render_template, Response
-import torch.backends.cudnn as cudnn
-import torch
-import cv2
-from pathlib import Path
-import shutil
-import platform
-import argparse
-import sys
-from threading import Thread
-import mysql.connector
 from ast import Break
-import imghdr
 from cProfile import run
 from concurrent.futures import thread
 from multiprocessing.resource_sharer import stop
 import os
 from datetime import datetime
 from pickle import FALSE, TRUE
-from unittest import result
-import os
-import cctv2
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
 os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
 os.environ["NUMEXPR_NUM_THREADS"] = "1"
+import mysql.connector
+from threading import Thread
+import sys
 sys.path.insert(0, './yolov5')
+import argparse
+import os
+import platform
+import shutil
+from pathlib import Path
+import cv2
+import torch
+import torch.backends.cudnn as cudnn
+from flask import Flask, render_template, Response
 
+from yolov5.models.experimental import attempt_load
+from yolov5.utils.downloads import attempt_download
+from yolov5.models.common import DetectMultiBackend
+from yolov5.utils.datasets import LoadImages, LoadStreams
+from yolov5.utils.general import (LOGGER, check_img_size, non_max_suppression, scale_coords, 
+                                  check_imshow, xyxy2xywh, increment_path)
+from yolov5.utils.torch_utils import select_device, time_sync
+from yolov5.utils.plots import Annotator, colors, save_one_box
+from deep_sort.utils.parser import get_config
+from deep_sort.deep_sort import DeepSort
+
+## email
+import pyautogui
+import smtplib
+import ssl
+from email.message import EmailMessage
 
 # email
 
@@ -64,9 +63,6 @@ data = []
 data1 = []
 data2 = []
 data3 = []
-car1 = cctv2.car1
-truck1 = cctv2.truck1
-count1 = cctv2.count1
 reset = int(datetime.now().minute) + 7
 
 # buat koneksi Mysql
