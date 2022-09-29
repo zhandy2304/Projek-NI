@@ -42,7 +42,7 @@
 <body>
   <nav class="navbar navbar-light bg-light fixed-top">
     <div class="container-fluid">
-      <a class="navbar-brand text-dark fw-semibold" href="#" style="font-size:30px;">
+      <a class="navbar-brand text-dark fw-semibold" href="/" style="font-size:30px;">
         <img src="https://tolmakassar.com/apexnew/app-assets/img/Logo_MMN_JTSE.png" alt="Logo" width="50" height="40" class="d-inline-block align-text-top">
           CCTV</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar">
@@ -82,13 +82,13 @@
         <div class="offcanvas-body">
           <ul class="navbar-nav justify-content-end flex-grow-1 pe-3 me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link text-dark fw-semibold fs-5" aria-current="page" href="#Counting">Counting</a>
+              <a class="nav-link text-dark fw-semibold fs-5" aria-current="page" href="/#Counting">Counting</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-dark fw-semibold fs-5" href="#pelanggaran">Pelanggaran</a>
+              <a class="nav-link text-dark fw-semibold fs-5" href="/#pelanggaran">Pelanggaran</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-dark fw-semibold fs-5" href="maps" target="_blank">Peta</a>
+              <a class="nav-link text-dark fw-semibold fs-5" href="/maps" target="_blank">Peta</a>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle text-dark fw-semibold fs-5" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -106,15 +106,15 @@
     </div>
   </nav>
 
-            <div class="container-fluid">
+            <div class="container-fluid" style="margin-bottom:20px;">
                 <div class="row align-items-center justify-content-lg-between" style="margin-top:100px">
                     <div class="col-lg-6">
                         <ul class="nav nav-footer justify-content-center justify-content-lg-start">
                             <li class="nav-item">
-                                <a href="data_pelanggaran"><h7>Data Pelanggaran Lalu Lintas</h6></a>
+                                <a href="data_pelanggaran" style="color:black; text-decoration: none;"><h7>Data Pelanggaran Lalu Lintas</h6></a>
                             </li>
                             <li class="nav-item" style="margin-left:15px">
-                                <a href="javascript:;"><h7 class="font-weight-bolder mb-0">Data Traffic Lalu Lintas</h6></a>
+                                <b><a href="javascript:;" style="color:black; text-decoration: none;"><h7 class="font-weight-bolder mb-0">Data Traffic Lalu Lintas</h7></a></b>
                             </li>
                         </ul>
                       </div>
@@ -130,10 +130,10 @@
             <div class="card mb-4">
                 <div class="card-header pb-0">
                     <h6>Data Harian Traffic Lalu Lintas On Ramp Pettarani</h6>
-                    <p class="text-sm">
+                    <!-- <p class="text-sm">
                         <i class="fa fa-arrow-up text-success" aria-hidden="true"></i>
                         <span class="font-weight-bold">4% more</span> in 2021
-                    </p>
+                    </p> -->
                 </div>
                 <div class="card-body p-3">
                     <div class="chart">
@@ -161,10 +161,10 @@
             <div class="card mb-4">
                 <div class="card-header pb-0">
                     <h6>Data Harian Traffic Lalu Lintas On Ramp Ablam 1</h6>
-                    <p class="text-sm">
+                    <!-- <p class="text-sm">
                         <i class="fa fa-arrow-up text-success" aria-hidden="true"></i>
                         <span class="font-weight-bold">4% more</span> in 2021
-                    </p>
+                    </p> -->
                 </div>
                 <div class="card-body p-3">
                     <div class="chart" id="chart1">
@@ -194,10 +194,10 @@
                     <div class="card mb-4">
                         <div class="card-header pb-0">
                             <h6>Data Perjam Offramp Pettarani</h6>
-                            <p class="text-sm">
+                            <!-- <p class="text-sm">
                                 <i class="fa fa-arrow-up text-success" aria-hidden="true"></i>
                                 <span class="font-weight-bold">4% more</span> in 2021
-                            </p>
+                            </p> -->
                         </div>
                         <div class="card-body p-3">
                             <div class="chart" id="chart2">
@@ -226,10 +226,10 @@
                     <div class="card mb-4">
                         <div class="card-header pb-0">
                             <h6>Data Perjam Offramp Ablam</h6>
-                            <p class="text-sm">
+                            <!-- <p class="text-sm">
                                 <i class="fa fa-arrow-up text-success" aria-hidden="true"></i>
                                 <span class="font-weight-bold">4% more</span> in 2021
-                            </p>
+                            </p> -->
                         </div>
                         <div class="card-body p-3">
                             <div class="chart" id="chart3">

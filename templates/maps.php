@@ -10,13 +10,13 @@
   <script src="https://maps.google.com/maps/api/js?key=AIzaSyCgELFbsvJqa5gTNtLYGINwu8dJcjbVIbc" type="text/javascript"></script>
   <!-- <script src="https://maps.googleapis.com/maps/api/js?sensor=false&callback=myMap"></script> -->
 
-  <!-- Automatic refresh page -->
+  <!-- Automatic refresh page every 10 minutes -->
   <script>
         function autoRefresh() {
             window.location = window.location.href;
         }
-        setInterval('autoRefresh()', 600000);
-    </script>
+        setInterval('autoRefresh()', 300000);
+  </script>
 
 </head> 
 
@@ -24,7 +24,7 @@
   
 <nav class="navbar navbar-light bg-light fixed-top">
     <div class="container-fluid">
-      <a class="navbar-brand text-dark fw-semibold" href="#" style="font-size:30px;">
+      <a class="navbar-brand text-dark fw-semibold" href="/" style="font-size:30px;">
         <img src="https://tolmakassar.com/apexnew/app-assets/img/Logo_MMN_JTSE.png" alt="Logo" width="50" height="40" class="d-inline-block align-text-top">
           CCTV</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar">
@@ -41,18 +41,21 @@
               </span> 
             </button>
             <ul class="dropdown-menu">
-            
-            <!-- Pengkoneksian ke database untuk pembuatan notifikasi -->
+
+          <!-- Pengkoneksian ke database untuk pembuatan notifikasi -->
             <?php
               $conn = new mysqli('localhost', 'root', '', 'jalan_toll');
               $query10 = $conn->query("
               SELECT * FROM data_pelanggaran ORDER BY ID DESC LIMIT 5 
               ");
+
+              $result = array();
               while ($data7 = $query10 -> fetch_assoc()){
-                print_r ("
+                echo ("
                 <li>
                 <a class='dropdown-item' role='button' style='height:50px;' type='button' data-bs-placement='left' tabindex='0'  data-bs-toggle='popover' data-bs-trigger='hover' data-bs-title='Pelanggaran ".$data7['WAKTU']."'data-bs-content='".$data7['JENIS_PELANGGARAN']." di ".$data7['LOKASI']."'><span><i class='fa-sharp fa-solid fa-envelope' aria-pressed='true' ></i></span>".$data7['JENIS_PELANGGARAN']."<br><p>".$data7['LOKASI']."</p></a>
               </li>");
+
               };
             ?>
             
@@ -64,10 +67,10 @@
         <div class="offcanvas-body">
           <ul class="navbar-nav justify-content-end flex-grow-1 pe-3 me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link text-dark fw-semibold fs-5" aria-current="page" href="#Counting">Counting</a>
+              <a class="nav-link text-dark fw-semibold fs-5" aria-current="page" href="/#Counting">Counting</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-dark fw-semibold fs-5" href="#pelanggaran">Pelanggaran</a>
+              <a class="nav-link text-dark fw-semibold fs-5" href="/#pelanggaran">Pelanggaran</a>
             </li>
             <li class="nav-item">
               <a class="nav-link text-dark fw-semibold fs-5" href="maps" target="_blank">Peta</a>
@@ -91,7 +94,8 @@
 
   <h1 class="Counting" id="Counting" style="margin-top:80px"><center>Maps Data Lalu Lintas Hari Ini</center></h1>
   <center><div id="map" style="width: 1200px; height: 500px; margin-top: 10px; margin-left: 20px; margin-right: 20px;"></div></center>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" 
+  integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
 <script>
 
 <?php 
