@@ -66,12 +66,35 @@
               $query10 = $conn->query("
               SELECT * FROM data_pelanggaran ORDER BY ID DESC LIMIT 5 
               ");
+
+              $result = array();
               while ($data7 = $query10 -> fetch_assoc()){
-                print_r ("
+                echo ("
                 <li>
                 <a class='dropdown-item' role='button' style='height:50px;' type='button' data-bs-placement='left' tabindex='0'  data-bs-toggle='popover' data-bs-trigger='hover' data-bs-title='Pelanggaran ".$data7['WAKTU']."'data-bs-content='".$data7['JENIS_PELANGGARAN']." di ".$data7['LOKASI']."'><span><i class='fa-sharp fa-solid fa-envelope' aria-pressed='true' ></i></span>".$data7['JENIS_PELANGGARAN']."<br><p>".$data7['LOKASI']."</p></a>
-              </li>");
+              ");
+
+              if($data7['JENIS_PELANGGARAN'] == 'Melawan Arus') {
+                echo ("
+                <img src='/static/pelanggaran/".$data7['GAMBAR']."'
+                style='margin-left:16px;'
+                class='d-block w-50 h-25 rounded'
+                alt='...'/>
+                
+                </li>
+                ");
+              }else{
+                echo ("
+                <img src='/static/counting/".substr($data7['project'], -7)."/person/".$data7['GAMBAR']."'
+                style='margin-left:16px;'
+                class='d-block w-50 h-25 rounded'
+                alt='...'/>
+                
+                </li>");
+              }
+
               };
+              echo ("</ul>")
             ?>
             
           </ul>
@@ -527,7 +550,7 @@
                 thead.rows[0].insertCell(i).innerText = data.labels[i];
                 
               };
-              thead.rows[0].insertCell(0).innerText = 'Jam'
+              thead.rows[0].insertCell(0).innerText = 'Tanggal'
 
               // add table body
               const tbody = table.createTBody();
@@ -676,7 +699,7 @@
                 thead.rows[0].insertCell(i).innerText = data.labels[i];
                 
               };
-              thead.rows[0].insertCell(0).innerText = 'Jam'
+              thead.rows[0].insertCell(0).innerText = 'Tanggal'
 
               // add table body
               const tbody = table.createTBody();
