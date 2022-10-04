@@ -18,8 +18,6 @@
         setInterval('autoRefresh()', 300000);
   </script>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-
 </head> 
 
 <body>
@@ -69,7 +67,7 @@
                 ");
               }else{
                 echo ("
-                <img src='/static/counting000/".substr($data7['project'], 11)."/person/".$data7['GAMBAR']."'
+                <img src='/static/counting000/".substr($data7['project'], -7)."/person/".$data7['GAMBAR']."'
                 style='margin-left:16px;'
                 class='d-block w-50 h-25 rounded'
                 alt='...'/>
@@ -82,7 +80,6 @@
             ?>
             
           </ul>
-
           </div>
           <h5 class="offcanvas-title fw-bold fs-3 " id="offcanvasDarkNavbarLabel ">CCTV</h5>
           <button type="button" class="btn-close btn-close-black" data-bs-dismiss="offcanvas" aria-label="Close"></button> 
@@ -125,6 +122,9 @@
 
 $conn = new mysqli('localhost', 'root', '', 'jalan_toll');
 
+// UNTUK JUMLAH PELANGGARAN
+// Deklarasi variabel jumlah pelanggaran
+// Area Off Ramp Rappokalling
 $query = $conn->query("
 SELECT COUNT(*) AS number_of_appearances 
     FROM data_pelanggaran
@@ -135,12 +135,12 @@ SELECT COUNT(*) AS number_of_appearances
     FROM data_pelanggaran
     WHERE DAY(WAKTU) = DAY(CURDATE()) and LOKASI = 'Off Ramp Rappokalling'");
 
-// Deklarasi variabel jumlah pelanggaran
-// Area Off Ramp Rappokalling
 foreach($query as $data){
-  $jumlah_rappokalling[] = $data['number_of_appearances'];
+  $pelanggaran_rappokalling[] = $data['number_of_appearances'];
 }
 
+// Deklarasi variabel jumlah pelanggaran
+// Area Gerbang Tol Kaluku Badoa
 $query7 = $conn->query("
 SELECT COUNT(*) AS number_of_appearances2 
     FROM data_pelanggaran
@@ -151,12 +151,31 @@ SELECT COUNT(*) AS number_of_appearances2
     FROM data_pelanggaran
     WHERE DAY(WAKTU) = DAY(CURDATE()) and LOKASI = 'Gerbang Tol Kaluku Badoa'");
 
-// Deklarasi variabel jumlah pelanggaran
-// Area Gerbang Tol Kaluku Badoa
 foreach($query7 as $data2){
-  $jumlah_kaluku_badoa[] = $data2['number_of_appearances2']; 
+  $pelanggaran_kaluku_badoa[] = $data2['number_of_appearances2']; 
 }
 
+// Deklarasi variabel jumlah pelanggaran
+// Area On Ramp Kaluku Badoa
+$query13 = $conn->query("
+SELECT COUNT(*) AS number_of_appearances3 
+    FROM data_pelanggaran
+    WHERE DAY(WAKTU) = DAY(CURDATE()) and LOKASI = 'On Ramp Kaluku Badoa'");
+
+$query14 = $conn->query("
+SELECT COUNT(*) AS number_of_appearances3 
+    FROM data_pelanggaran
+    WHERE DAY(WAKTU) = DAY(CURDATE()) and LOKASI = 'On Ramp Kaluku Badoa'");
+
+foreach($query13 as $data8){
+  $pelanggaran_rappokalling2[] = $data8['number_of_appearances3']; 
+}
+
+
+
+// UNTUK COUNTING KENDARAAN
+// Deklarasi variabel jumlah kendaraan
+// Area On Ramp Alauddin
 $query3 = $conn->query("
 SELECT SUM(TOTAL) as total
 FROM on_ramp_pettarani
@@ -167,12 +186,12 @@ SELECT SUM(TOTAL) as total
 FROM on_ramp_pettarani
 WHERE DAY(waktu_input) = DAY(CURRENT_DATE())");
 
-// Deklarasi variabel jumlah kendaraan
-// Area On Ramp Pettarani
 foreach($query3 as $data3){
   $jumlah_on_ramp_pettarani[] = $data3['total'];
 }
 
+// Deklarasi variabel jumlah kendaraan
+// Area On Ramp Ablam
 $query5 = $conn->query("
 SELECT SUM(TOTAL) as total2
 FROM on_ramp_ablam
@@ -183,19 +202,34 @@ SELECT SUM(TOTAL) as total2
 FROM on_ramp_ablam
 WHERE DAY(waktu_input) = DAY(CURRENT_DATE())");
 
-// Deklarasi variabel jumlah kendaraan
-// Area On Ramp Ablam
 foreach($query5 as $data4){
   $jumlah_on_ramp_ablam[] = $data4['total2'];
 }
 
-// Deklarasi jika tidak ada data pelanggaran
-if ($jumlah_rappokalling[] = null){
-  $jumlah_rappokalling[] = [0];
+// Deklarasi variabel jumlah kendaraan
+// Area Gerbang Kaluku Badoa
+$query9 = $conn->query("
+SELECT SUM(TOTAL) as total3
+FROM grb_kalukubadoa
+WHERE DAY(waktu_input) = DAY(CURRENT_DATE())");
+
+$query10 = $conn->query("
+SELECT SUM(TOTAL) as total3
+FROM grb_kalukubadoa
+WHERE DAY(waktu_input) = DAY(CURRENT_DATE())");
+
+foreach($query9 as $data5){
+  $jumlah_grb_kaluku_badoa[] = $data5['total3'];
 }
 
-if ($jumlah_kaluku_badoa[] = null){
-  $jumlah_kaluku_badoa[] = [0];
+
+// Deklarasi jika tidak ada data pelanggaran
+if ($pelanggaran_rappokalling[] = null){
+  $pelanggaran_rappokalling[] = [0];
+}
+
+if ($pelanggaran_kaluku_badoa[] = null){
+  $pelanggaran_kaluku_badoa[] = [0];
 }
 
 ?>
@@ -214,32 +248,38 @@ function initMap() {
     // Add location
     var locations = [
       ['Gerbang Tol Kaluku Badoa', -5.117499135915403, 119.44175786972707],
+      ['On Ramp Rappokalling', -5.129894348879903, 119.44061448951626],
       ['Off Ramp Rappokalling', -5.121935023337312, 119.44207769473527],
     ];
 
     var locations_counting = [
       ['On Ramp Abu Bakar Lambogo', -5.14201454396365, 119.4387834789535],
-      ['Area Rappokalling', -5.129894348879903, 119.44061448951626],
+      ['On Ramp Alauddin',-5.1606939762353585, 119.43603160138542]
     ]
 
     var marker, i;
                         
-    // Info window content
+    // Info window content untuk Pelanggaran
     var infoWindowContent = [
       ['<div class="info_content">' +
       '<h9 style="font-weight: bold; ">Gerbang Tol Kaluku Badoa</h9>' +
-      '<p> Terjadi pelanggaran sebanyak <b><?php print_r($jumlah_kaluku_badoa[0]) ?></b> </p>' + '</div>'],
+      '<p> Terjadi pelanggaran sebanyak <b><?php print_r($pelanggaran_kaluku_badoa[0]) ?></b> </p>' + 
+      '<p> Jumlah kendaraan yang melalui <br>jalur ini adalah <b><?php print_r($jumlah_grb_kaluku_badoa[0]) ?></b> </p>'+  '</div>'],
+      ['<div class="info_content">' +
+      '<h9 style="font-weight: bold; ">On Ramp Rappokalling</h9>' +
+      '<p> Terjadi pelanggaran sebanyak <b><?php print_r($pelanggaran_rappokalling[0]) ?></b> </p>' + '</div>'],
       ['<div class="info_content">' +
       '<h9 style="font-weight: bold; ">Off Ramp Rappokalling</h9>' +
-      '<p> Terjadi pelanggaran sebanyak <b><?php print_r($jumlah_rappokalling[0]) ?></b> </p>' + '</div>']
+      '<p> Terjadi pelanggaran sebanyak <b><?php print_r($pelanggaran_rappokalling2[0]) ?></b> </p>' + '</div>']
     ];
 
+    // Info window content untuk Counting Kendaraan
     var infoWindowContentCounting = [
       ['<div class="info_content">' +
       '<h9 style="font-weight: bold; ">On Ramp Abu Bakar Lambogo</h9>' +
       '<p> Jumlah kendaraan yang melalui jalur <br> ini adalah <b><?php print_r($jumlah_on_ramp_ablam[0]) ?></b> </p>' + '</div>'],
       ['<div class="info_content">' +
-      '<h9 style="font-weight: bold; ">Area Rappokalling</h9>' +
+      '<h9 style="font-weight: bold; ">On Ramp Alauddin</h9>' +
       '<p> Jumlah kendaraan yang melalui <br>jalur ini adalah <b><?php print_r($jumlah_on_ramp_pettarani[0]) ?></b> </p>' + '</div>']
     ];
         
@@ -322,7 +362,7 @@ function initMap() {
 
     // Set zoom level
     var boundsListener = google.maps.event.addListener((map), 'bounds_changed', function(event) {
-    this.setZoom(14);
+    this.setZoom(13);
     google.maps.event.removeListener(boundsListener);
     });
 

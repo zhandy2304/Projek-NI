@@ -87,7 +87,7 @@
                 ");
               }else{
                 echo ("
-                <img src='/static/counting/".substr($data7['project'], -7)."/person/".$data7['GAMBAR']."'
+                <img src='/static/counting000/".substr($data7['project'], -7)."/person/".$data7['GAMBAR']."'
                 style='margin-left:16px;'
                 class='d-block w-50 h-25 rounded'
                 alt='...'/>
